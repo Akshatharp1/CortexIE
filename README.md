@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
 
 # ✦ CortexIE
@@ -567,3 +568,7 @@ Steps 1 and 2 unlock the full Kubernetes experience. The rest is hardening for p
 *CortexIE — because the environment should be as intelligent as the engineers building on top of it.*
 
 </div>
+=======
+# rh26-team10
+CortexIE Repo
+>>>>>>> 93059628d161d77a7688c34ff01d80558b64157d

@@ -1,0 +1,10 @@
+productName: rp-hackathon
+azureProjectUrl: None
+repoOwner: RH26-Team10
+productionReleasePipelines:
+  - None
+productionBranches:
+  - None
+complianceType:
+  - Sandbox
+archived: false
