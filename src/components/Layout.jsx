@@ -7,10 +7,8 @@ import {
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
 import AddToQueueRoundedIcon from '@mui/icons-material/AddToQueueRounded'
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded'
-import LayersRoundedIcon from '@mui/icons-material/LayersRounded'
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded'
 import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded'
-import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded'
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded'
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
@@ -22,11 +20,9 @@ const DRAWER_WIDTH = 248
 const NAV = [
   { to: '/', label: 'Dashboard', icon: <DashboardRoundedIcon /> },
   { to: '/create', label: 'Create Sandbox', icon: <AddToQueueRoundedIcon /> },
-  { to: '/environments', label: 'Environments', icon: <DnsRoundedIcon /> },
-  { to: '/templates', label: 'Blueprints', icon: <LayersRoundedIcon /> },
+  { to: '/environments', label: 'Sandboxes', icon: <DnsRoundedIcon /> },
+  { to: '/products', label: 'Products', icon: <CategoryRoundedIcon /> },
   { to: '/monitoring', label: 'Monitoring', icon: <MonitorHeartRoundedIcon /> },
-  { to: '/cost', label: 'Cost Optimization', icon: <SavingsRoundedIcon /> },
-  { to: '/access', label: 'Access Control', icon: <GroupRoundedIcon /> },
   { to: '/settings', label: 'Settings', icon: <SettingsRoundedIcon /> },
 ]
 

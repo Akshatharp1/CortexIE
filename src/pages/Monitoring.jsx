@@ -104,11 +104,11 @@ export default function Monitoring() {
 
         <Grid item xs={12}>
           <Card><CardContent>
-            <Typography variant="h6" sx={{ mb: 1 }}>Environment health matrix</Typography>
+            <Typography variant="h6" sx={{ mb: 1 }}>Sandbox health matrix</Typography>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Environment</TableCell>
+                  <TableCell>Sandbox</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Health</TableCell>
                   <TableCell>CPU</TableCell>

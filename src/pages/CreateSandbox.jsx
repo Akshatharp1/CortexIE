@@ -27,7 +27,7 @@ const SAMPLE_PROMPTS = [
 
 export default function CreateSandbox() {
   const navigate = useNavigate()
-  const { createEnvironment, settings } = useApp()
+  const { createEnvironment, environments, settings } = useApp()
 
   const [active, setActive] = useState(0)
   const [prompt, setPrompt] = useState('')
@@ -38,6 +38,7 @@ export default function CreateSandbox() {
   const [storageClass, setStorageClass] = useState(STORAGE_CLASSES[0])
   const [loftProduct, setLoftProduct] = useState(LOFT_PRODUCTS[0])
   const [branchMode, setBranchMode] = useState('global') // 'global' | 'custom'
+  const [provisioningId, setProvisioningId] = useState(null)
   const [branchName, setBranchName] = useState('')
   const [options, setOptions] = useState({ seedData: true, observability: true, piiMasking: false })
 
@@ -69,16 +70,25 @@ export default function CreateSandbox() {
     }
   }
 
-  const provision = () => {
-    createEnvironment(plan, name)
-    setActive(3)
+  const provision = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const id = await createEnvironment(plan, name)
+      setProvisioningId(id)
+      setActive(3)
+    } catch (e) {
+      setError(e?.message || 'Provisioning failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <Box>
       <Typography variant="h4">Create Sandbox</Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Describe what you need — CortexIE resolves dependencies, sizes infrastructure, and provisions a ready-to-use environment.
+        Describe what you need — CortexIE resolves dependencies, sizes infrastructure, and provisions a ready-to-use sandbox.
       </Typography>
 
       <Stepper activeStep={active} alternativeLabel sx={{ mb: 4 }}>
@@ -95,13 +105,13 @@ export default function CreateSandbox() {
           <CardContent>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
               <AutoAwesomeRoundedIcon color="secondary" />
-              <Typography variant="h6">Describe your environment</Typography>
+              <Typography variant="h6">Describe your sandbox</Typography>
               <Chip size="small" label={settings.aiMode === 'claude' ? 'Claude API' : 'Rule-based AI'}
                 color={settings.aiMode === 'claude' ? 'secondary' : 'default'} variant="outlined" />
             </Stack>
             <TextField
               fullWidth multiline minRows={3}
-              placeholder="e.g. Full production-like OneSite environment with billing for a hotfix test in East US"
+              placeholder="e.g. Full production-like OneSite sandbox with billing for a hotfix test in East US"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
@@ -143,7 +153,7 @@ export default function CreateSandbox() {
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField fullWidth label="Environment name (optional)" value={name}
+                <TextField fullWidth label="Sandbox name (optional)" value={name}
                   onChange={(e) => setName(e.target.value)} placeholder="auto-generated" />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -290,41 +300,82 @@ export default function CreateSandbox() {
       )}
 
       {/* STEP 3 — Provision */}
-      {active === 3 && plan && (
-        <Card>
-          <CardContent>
-            <Stack alignItems="center" spacing={2} sx={{ py: 3 }}>
-              <RocketLaunchRoundedIcon color="primary" sx={{ fontSize: 56 }} />
-              <Typography variant="h5">Provisioning “{name}”</Typography>
-              <Typography color="text.secondary">
-                CortexIE is orchestrating your environment. This continues in the background.
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" useFlexGap>
-                <Chip size="small" label={plan.loftProduct} variant="outlined" />
-                <Chip size="small" label={`storage: ${plan.storageClass}`} variant="outlined" />
-                <Chip size="small" color="secondary" label={`branch: ${plan.pipelineBranch}`} variant="outlined" />
+      {active === 3 && plan && (() => {
+        const currentEnv = environments.find((e) => e.id === provisioningId)
+        const isReady = currentEnv?.status === 'running'
+        return (
+          <Card>
+            <CardContent>
+              <Stack alignItems="center" spacing={2} sx={{ py: 3 }}>
+                <RocketLaunchRoundedIcon color={isReady ? 'success' : 'primary'} sx={{ fontSize: 56, animation: isReady ? 'none' : 'pulse 2s infinite' }} />
+                <Typography variant="h5">
+                  {isReady ? `“${name || currentEnv?.name}” is Ready!` : `Provisioning “${name || currentEnv?.name}”`}
+                </Typography>
+                <Typography color="text.secondary" align="center" sx={{ maxW: 560 }}>
+                  {isReady
+                    ? 'CortexIE has successfully provisioned all containerized microservices and verification health checks have passed.'
+                    : 'CortexIE is orchestrating your sandbox. This continues in the background.'}
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" useFlexGap>
+                  <Chip size="small" label={plan.loftProduct} variant="outlined" />
+                  <Chip size="small" label={`storage: ${plan.storageClass}`} variant="outlined" />
+                  <Chip size="small" color="secondary" label={`branch: ${plan.pipelineBranch}`} variant="outlined" />
+                </Stack>
+                <Box sx={{ width: '100%', maxWidth: 520, mt: 1 }}>
+                  <List>
+                    {PROVISION_STEPS.map((s, i) => {
+                      const stepStatus = currentEnv
+                        ? i < currentEnv.provisionStep
+                          ? 'completed'
+                          : i === currentEnv.provisionStep
+                            ? 'active'
+                            : 'pending'
+                        : 'pending'
+                      return (
+                        <ListItem key={s} disableGutters sx={{ py: 0.5 }}>
+                          <ListItemIcon sx={{ minWidth: 34 }}>
+                            {stepStatus === 'completed' ? (
+                              <CheckCircleRoundedIcon fontSize="small" sx={{ color: 'success.main' }} />
+                            ) : stepStatus === 'active' ? (
+                              <CircularProgress size={16} sx={{ color: 'primary.main' }} />
+                            ) : (
+                              <Box sx={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(148, 160, 189, 0.3)', ml: 0.25 }} />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={s}
+                            primaryTypographyProps={{
+                              fontWeight: stepStatus === 'active' ? 700 : 500,
+                              color: stepStatus === 'pending' ? 'text.secondary' : 'text.primary',
+                              fontSize: 14,
+                            }}
+                          />
+                        </ListItem>
+                      )
+                    })}
+                  </List>
+                  {isReady ? (
+                    <Alert severity="success" sx={{ mt: 2, borderRadius: 2 }}>
+                      <strong>Real-time deployment verified:</strong> 100% services online and routing.
+                    </Alert>
+                  ) : (
+                    <LinearProgress sx={{ borderRadius: 3, height: 8, mt: 2 }} />
+                  )}
+                </Box>
+                <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
+                  {isReady && currentEnv && (
+                    <Button variant="contained" color="success" onClick={() => navigate(`/environments/${currentEnv.id}`)}>
+                      Launch Sandbox Detail
+                    </Button>
+                  )}
+                  <Button variant="outlined" onClick={() => navigate('/environments')}>View sandboxes</Button>
+                  <Button variant="contained" onClick={() => navigate('/monitoring')}>Open monitoring</Button>
+                </Stack>
               </Stack>
-              <Box sx={{ width: '100%', maxWidth: 520 }}>
-                <List>
-                  {PROVISION_STEPS.map((s, i) => (
-                    <ListItem key={s} disableGutters>
-                      <ListItemIcon sx={{ minWidth: 34 }}>
-                        <CheckCircleRoundedIcon fontSize="small" sx={{ color: 'success.main' }} />
-                      </ListItemIcon>
-                      <ListItemText primary={s} />
-                    </ListItem>
-                  ))}
-                </List>
-                <LinearProgress sx={{ borderRadius: 3, height: 8, mt: 1 }} />
-              </Box>
-              <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-                <Button variant="outlined" onClick={() => navigate('/environments')}>View environments</Button>
-                <Button variant="contained" onClick={() => navigate('/monitoring')}>Open monitoring</Button>
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )
+      })()}
     </Box>
   )
 }

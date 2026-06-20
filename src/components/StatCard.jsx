@@ -1,8 +1,22 @@
 import { Card, CardContent, Box, Typography, Avatar } from '@mui/material'
 
-export default function StatCard({ icon, label, value, sub, color = 'primary', trend }) {
+export default function StatCard({ icon, label, value, sub, color = 'primary', trend, active, onClick, sx = {} }) {
   return (
-    <Card sx={{ height: '100%' }}>
+    <Card
+      onClick={onClick}
+      sx={{
+        height: '100%',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: '0.2s',
+        ...(active && {
+          borderColor: (t) => t.palette[color].main,
+          borderStyle: 'solid',
+          borderWidth: '2px',
+          boxShadow: (t) => `0 0 12px ${t.palette[color].main}44`,
+        }),
+        ...sx
+      }}
+    >
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Avatar

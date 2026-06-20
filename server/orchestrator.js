@@ -88,10 +88,12 @@ async function provision(env) {
   // Spawn services one at a time with a short delay, advancing the step UI.
   for (let i = 0; i < env.services.length; i++) {
     await new Promise((r) => setTimeout(r, 700))
+    if (env.status !== 'provisioning') return // paused or terminated
     spawnService(env, env.services[i])
     env.provisionStep = Math.min(2 + i, PROVISION_STEPS.length - 1)
   }
   await new Promise((r) => setTimeout(r, 700))
+  if (env.status !== 'provisioning') return
   env.provisionStep = PROVISION_STEPS.length
   env.status = 'running'
   logActivity(`${env.name} provisioned successfully`, 'success')
@@ -292,6 +294,7 @@ export async function refreshHealth() {
 
 // ---- seed one real environment so the platform isn't empty on boot ---------
 export function seed() {
+  // 1. Seed LeaseStar (Running)
   createEnvironment(
     {
       product: 'leasestar',
@@ -306,6 +309,57 @@ export function seed() {
     'leasestar-ui-regression',
     'Akshatha Reddy',
   )
+
+  // 2. Seed Resident Screening (Idle/Paused)
+  const id2 = newId()
+  const env2 = {
+    id: id2,
+    name: 'screening-pii-audit',
+    product: 'screening',
+    template: 'tpl-screening-secure',
+    templateName: 'Resident Screening — Secure',
+    region: 'local (Node host)',
+    status: 'idle',
+    cpu: 6,
+    memoryGb: 16,
+    costPerDay: 11.4,
+    owner: 'Dev Patel',
+    createdAt: new Date(Date.now() - 3600_000 * 24).toISOString(), // 1 day ago
+    drift: false,
+    provisionStep: 6,
+    services: [
+      { name: 'screening-api', status: 'stopped', port: allocPort(), pid: null, cpuPct: 0, memMB: 0 },
+      { name: 'pii-vault', status: 'stopped', port: allocPort(), pid: null, cpuPct: 0, memMB: 0 },
+      { name: 'postgres', status: 'stopped', port: allocPort(), pid: null, cpuPct: 0, memMB: 0 },
+    ],
+  }
+  environments.set(id2, env2)
+
+  // 3. Seed AIRM ML Pipeline (Running & Drifted)
+  const id3 = createEnvironment(
+    {
+      product: 'aim',
+      template: 'tpl-airm-ml',
+      templateName: 'AIRM — ML Pipeline',
+      region: 'local (Node host)',
+      cpu: 16,
+      memoryGb: 64,
+      estCostPerDay: 38.5,
+      services: ['airm-api', 'model-trainer', 'feature-store', 'postgres', 'mongo'],
+    },
+    'airm-q3-model-eval',
+    'Marcus Webb',
+  )
+  
+  // Set drift = true after it finishes provisioning
+  setTimeout(() => {
+    const env = environments.get(id3)
+    if (env) {
+      env.drift = true
+      const trainer = env.services.find(s => s.name === 'model-trainer')
+      if (trainer) trainer.status = 'degraded'
+    }
+  }, 6000)
 }
 
 // Clean up all child processes on shutdown.

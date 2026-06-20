@@ -17,12 +17,19 @@ import { TEMPLATES, PRODUCTS, PROVISION_STEPS } from '../data/mockData.js'
 // }
 
 const KEYWORDS = {
-  onesite: ['onesite', 'property', 'billing', 'resident', 'lease ledger'],
-  aim: ['airm', 'revenue', 'pricing', 'ml', 'model', 'forecast', 'ai revenue'],
-  leasestar: ['leasestar', 'leasing', 'lease', 'tour', 'application'],
-  vendorcafe: ['vendor', 'invoice', 'payment', 'procurement', 'vendorcafe'],
-  spend: ['spend', 'gl', 'general ledger', 'reporting', 'analytics', 'finance'],
-  screening: ['screening', 'pii', 'background', 'credit check', 'security'],
+  loftliving: ['loft living', 'living', 'resident app', 'smart home'],
+  loftleasing: ['loft leasing', 'leasing', 'prospect', 'guest card'],
+  knock: ['knock', 'crm', 'leasing console'],
+  aim: ['airm', 'revenue', 'pricing', 'optimization', 'ml', 'model'],
+  bi: ['bi', 'business intelligence', 'analytics', 'reporting', 'data warehouse'],
+  cds: ['cds', 'common data', 'event mesh', 'kafka'],
+  financialsuite: ['financial suite', 'finance', 'ledger', 'accounting', 'accounts payable'],
+  g5: ['g5', 'marketing', 'builder', 'websites'],
+  loftloyalty: ['loyalty', 'rewards', 'perks'],
+  loftmoving: ['moving', 'move assistant', 'insurance'],
+  loftpayments: ['payments', 'ach', 'credit card', 'processor'],
+  onesite: ['onesite', 'property management', 'pms'],
+  onlineleasing: ['online leasing', 'esignature', 'application portal'],
 }
 
 const SIZE_HINTS = [

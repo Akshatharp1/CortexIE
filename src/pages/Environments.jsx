@@ -14,6 +14,11 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import StatusChip from '../components/StatusChip.jsx'
 import { useApp } from '../context/AppContext.jsx'
 import { PRODUCTS } from '../data/mockData.js'
+import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded'
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
+import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded'
+import StatCard from '../components/StatCard.jsx'
 
 export default function Environments() {
   const navigate = useNavigate()
@@ -21,12 +26,29 @@ export default function Environments() {
   const [q, setQ] = useState('')
   const [product, setProduct] = useState('all')
   const [status, setStatus] = useState('all')
+  const [ageFilter, setAgeFilter] = useState('all')
   const [menu, setMenu] = useState({ anchor: null, id: null })
+
+  const getAgeInDays = (createdAt) => {
+    if (!createdAt) return 0
+    const created = new Date(createdAt)
+    const diffTime = Math.abs(new Date() - created)
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+
+  const sandboxesOver30 = environments.filter((e) => getAgeInDays(e.createdAt) > 30).length
+  const sandboxesOver60 = environments.filter((e) => getAgeInDays(e.createdAt) > 60).length
+  const failedSandboxes = environments.filter((e) => e.status === 'error').length
+  const inactiveOver30 = environments.filter((e) => e.status === 'idle' && getAgeInDays(e.createdAt) > 30).length
 
   const filtered = environments.filter((e) => {
     if (q && !e.name.toLowerCase().includes(q.toLowerCase()) && !e.owner.toLowerCase().includes(q.toLowerCase())) return false
     if (product !== 'all' && e.product !== product) return false
     if (status !== 'all' && e.status !== status) return false
+    if (ageFilter === 'over30' && getAgeInDays(e.createdAt) <= 30) return false
+    if (ageFilter === 'over60' && getAgeInDays(e.createdAt) <= 60) return false
+    if (ageFilter === 'failed' && e.status !== 'error') return false
+    if (ageFilter === 'inactive30' && !(e.status === 'idle' && getAgeInDays(e.createdAt) > 30)) return false
     return true
   })
 
@@ -37,11 +59,54 @@ export default function Environments() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
         <Box>
-          <Typography variant="h4">Environments</Typography>
+          <Typography variant="h4">Sandboxes</Typography>
           <Typography color="text.secondary">{filtered.length} of {environments.length} sandboxes</Typography>
         </Box>
         <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => navigate('/create')}>New Sandbox</Button>
       </Stack>
+
+      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<CalendarTodayRoundedIcon />}
+            label="Sandboxes > 30 days"
+            value={sandboxesOver30}
+            color="info"
+            active={ageFilter === 'over30'}
+            onClick={() => setAgeFilter(ageFilter === 'over30' ? 'all' : 'over30')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<ErrorOutlineRoundedIcon />}
+            label="Failed sandboxes"
+            value={failedSandboxes}
+            color="error"
+            active={ageFilter === 'failed'}
+            onClick={() => setAgeFilter(ageFilter === 'failed' ? 'all' : 'failed')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<HistoryRoundedIcon />}
+            label="Sandboxes > 60 days"
+            value={sandboxesOver60}
+            color="warning"
+            active={ageFilter === 'over60'}
+            onClick={() => setAgeFilter(ageFilter === 'over60' ? 'all' : 'over60')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<PauseCircleOutlineRoundedIcon />}
+            label="Inactive sandboxes for 30 days"
+            value={inactiveOver30}
+            color="secondary"
+            active={ageFilter === 'inactive30'}
+            onClick={() => setAgeFilter(ageFilter === 'inactive30' ? 'all' : 'inactive30')}
+          />
+        </Grid>
+      </Grid>
 
       <Card sx={{ mb: 2.5 }}>
         <CardContent sx={{ py: 2 }}>

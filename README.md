@@ -19,9 +19,8 @@ The frontend can run on its own against in-memory mock data, or against the back
 | **Self-service creation** | A guided wizard: describe an environment in natural language → AI generates a provisioning plan → one-click provision with a live rollout. Lets you pick a **product**, a **storage class**, and either name a **pipeline branch** or fall back to the global version tag. |
 | **AI configuration engine** | Toggle-able. **Rule-based** by default (offline, deterministic). Optionally switch to the **Claude API** (`claude-opus-4-8`) to generate plans as structured JSON — with automatic fallback to rule-based if the call fails. |
 | **Live monitoring** | Real (or simulated) CPU/memory, a fleet health matrix, and configuration-drift detection with one-click remediation. |
-| **Blueprints & cloning** | Reusable environment templates per product, one-click provision, and environment cloning. |
+| **Products & cloning** | Reusable sandbox templates per product, one-click provision, and sandbox cloning. |
 | **RBAC** | Team members, roles, and a permission matrix (Platform Admin / Engineer / QA / Viewer). |
-| **Cost optimization** | Spend per product, idle-environment detection, and cleanup recommendations with potential-savings estimates. |
 
 ## 🧱 Tech stack
 
@@ -154,9 +153,8 @@ RealHack/
 │       ├── CreateSandbox.jsx          # the self-service wizard (centerpiece)
 │       ├── Environments.jsx
 │       ├── EnvironmentDetail.jsx
-│       ├── Templates.jsx
+│       ├── Products.jsx
 │       ├── Monitoring.jsx
-│       ├── CostOptimization.jsx
 │       ├── AccessControl.jsx
 │       └── Settings.jsx
 │
@@ -167,7 +165,6 @@ RealHack/
 
 - Cuts sandbox setup from **hours/days → minutes**.
 - **Standardizes** environments via reusable blueprints → fewer config inconsistencies.
-- **Cost intelligence** reduces idle infrastructure spend.
 - **Self-service + RBAC** lets any RealPage team provision safely without deep infra expertise.
 
 ---

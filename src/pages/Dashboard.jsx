@@ -12,6 +12,10 @@ import BoltRoundedIcon from '@mui/icons-material/BoltRounded'
 import SavingsRoundedIcon from '@mui/icons-material/SavingsRounded'
 import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
+import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded'
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
+import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded'
 import StatCard from '../components/StatCard.jsx'
 import StatusChip from '../components/StatusChip.jsx'
 import { useApp } from '../context/AppContext.jsx'
@@ -32,6 +36,17 @@ export default function Dashboard() {
   )
   const driftCount = environments.filter((e) => e.drift).length
 
+  const getAgeInDays = (createdAt) => {
+    if (!createdAt) return 0
+    const created = new Date(createdAt)
+    const diffTime = Math.abs(new Date() - created)
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+  const sandboxesOver30 = environments.filter((e) => getAgeInDays(e.createdAt) > 30).length
+  const sandboxesOver60 = environments.filter((e) => getAgeInDays(e.createdAt) > 60).length
+  const failedSandboxes = environments.filter((e) => e.status === 'error').length
+  const inactiveOver30 = environments.filter((e) => e.status === 'idle' && getAgeInDays(e.createdAt) > 30).length
+
   const byProduct = PRODUCTS.map((p) => ({
     name: p.name.split(' ')[0],
     value: environments.filter((e) => e.product === p.id).length,
@@ -45,7 +60,7 @@ export default function Dashboard() {
         <Box>
           <Typography variant="h4">Welcome back, Akshatha</Typography>
           <Typography color="text.secondary">
-            Environment-as-a-Service control center · Integrated Environments
+            Sandbox-as-a-Service control center · Integrated Sandboxes
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => navigate('/create')}>
@@ -55,7 +70,7 @@ export default function Dashboard() {
 
       <Grid container spacing={2.5}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard icon={<DnsRoundedIcon />} label="Active environments" value={running} sub={`${environments.length} total`} trend={12} />
+          <StatCard icon={<DnsRoundedIcon />} label="Active sandboxes" value={running} sub={`${environments.length} total`} trend={12} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard icon={<SpeedRoundedIcon />} label="Avg. fleet health" value={`${avgHealth}%`} color="success" sub={`${driftCount} drift alerts`} trend={3} />
@@ -65,6 +80,19 @@ export default function Dashboard() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard icon={<BoltRoundedIcon />} label="Avg. provision time" value="4.2 min" color="info" sub="was ~6 hrs manually" trend={-31} />
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard icon={<CalendarTodayRoundedIcon />} label="Sandboxes > 30 days" value={sandboxesOver30} color="info" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard icon={<ErrorOutlineRoundedIcon />} label="Failed sandboxes" value={failedSandboxes} color="error" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard icon={<HistoryRoundedIcon />} label="Sandboxes > 60 days" value={sandboxesOver60} color="warning" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard icon={<PauseCircleOutlineRoundedIcon />} label="Inactive sandboxes for 30 days" value={inactiveOver30} color="secondary" />
         </Grid>
 
         <Grid item xs={12} md={8}>
@@ -100,7 +128,7 @@ export default function Dashboard() {
             <CardContent>
               <Typography variant="h6">By product</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                Environment distribution
+                Sandbox distribution
               </Typography>
               <Box sx={{ height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -128,7 +156,7 @@ export default function Dashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="h6">Recent environments</Typography>
+                <Typography variant="h6">Recent sandboxes</Typography>
                 <Button size="small" onClick={() => navigate('/environments')}>View all</Button>
               </Stack>
               <Box sx={{ mt: 1 }}>
