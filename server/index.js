@@ -36,23 +36,23 @@ app.post('/api/environments/:id/clone', (req, res) => {
   res.status(201).json(orch.getEnvironment(id))
 })
 
-app.post('/api/environments/:id/pause', (req, res) => {
-  if (!orch.pauseEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
+app.post('/api/environments/:id/pause', async (req, res) => {
+  if (!await orch.pauseEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
   res.json(orch.getEnvironment(req.params.id))
 })
 
-app.post('/api/environments/:id/resume', (req, res) => {
-  if (!orch.resumeEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
+app.post('/api/environments/:id/resume', async (req, res) => {
+  if (!await orch.resumeEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
   res.json(orch.getEnvironment(req.params.id))
 })
 
-app.post('/api/environments/:id/rollback', (req, res) => {
-  if (!orch.rollbackEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
+app.post('/api/environments/:id/rollback', async (req, res) => {
+  if (!await orch.rollbackEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
   res.json(orch.getEnvironment(req.params.id))
 })
 
-app.delete('/api/environments/:id', (req, res) => {
-  if (!orch.deleteEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
+app.delete('/api/environments/:id', async (req, res) => {
+  if (!await orch.deleteEnvironment(req.params.id)) return res.status(404).json({ error: 'not found' })
   res.json({ ok: true })
 })
 
